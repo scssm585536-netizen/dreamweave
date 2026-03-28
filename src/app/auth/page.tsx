@@ -1,11 +1,11 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { signIn, signUp } from '@/lib/auth'
-import { supabase } from '@/lib/supabase'
+import { signIn, signUp } from '../lib/auth'
+import { supabase } from '../lib/supabase'
 
-export default function AuthPage() {
+function AuthForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [mode, setMode] = useState<'login' | 'signup'>(
@@ -117,5 +117,17 @@ export default function AuthPage() {
         </form>
       </div>
     </main>
+  )
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#070712] flex items-center justify-center">
+        <div className="text-4xl animate-pulse">🧵</div>
+      </div>
+    }>
+      <AuthForm />
+    </Suspense>
   )
 }
