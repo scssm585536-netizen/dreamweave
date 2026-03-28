@@ -2,8 +2,8 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { signIn, signUp } from '../lib/auth'
-import { supabase } from '../lib/supabase'
+import { signIn, signUp } from '@/lib/auth'
+import { supabase } from '@/lib/supabase'
 
 function AuthForm() {
   const router = useRouter()
