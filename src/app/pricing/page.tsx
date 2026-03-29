@@ -70,23 +70,52 @@ export default function PricingPage() {
     })
   }, [router])
 
+  // 결제 성공/취소 처리
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('success') === 'true') {
+      const plan = params.get('plan')
+      if (plan) {
+        setCurrentPlan(plan)
+        alert(`🎉 ${plan === 'dreamer' ? 'Dreamer' : 'Weaver'} 플랜으로 업그레이드됐어요!`)
+        window.history.replaceState({}, '', '/pricing')
+      }
+    }
+    if (params.get('canceled') === 'true') {
+      alert('결제가 취소됐어요.')
+      window.history.replaceState({}, '', '/pricing')
+    }
+  }, [])
+
   async function handleUpgrade(planId: string) {
-    if (planId === currentPlan) return
+    if (planId === currentPlan || planId === 'free') return
     setUpgrading(planId)
 
-    // TODO: 실제 결제 연동 (Stripe 등)
-    // 지금은 바로 플랜 변경 (테스트용)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/auth'); return }
 
-    await supabase
-      .from('profiles')
-      .update({ plan: planId })
-      .eq('id', user.id)
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan: planId,
+          userId: user.id,
+          email: user.email,
+        }),
+      })
 
-    setCurrentPlan(planId)
-    setUpgrading(null)
-    alert(`${planId} 플랜으로 변경됐어요! (실제 서비스에서는 결제 후 적용됩니다)`)
+      const { url, error } = await res.json()
+      if (error) { alert(error); return }
+
+      // Stripe 결제 페이지로 이동
+      window.location.href = url
+    } catch (err) {
+      console.error(err)
+      alert('결제 페이지 연결에 실패했어요')
+    } finally {
+      setUpgrading(null)
+    }
   }
 
   if (loading) {
