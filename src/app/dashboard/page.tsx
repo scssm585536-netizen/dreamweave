@@ -141,6 +141,12 @@ export default function DashboardPage() {
             <Link href="/dream/new" className="flex items-center gap-1 md:gap-2 px-3 md:px-5 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-xs md:text-sm font-semibold shadow-lg shadow-purple-900/50 transition-all duration-200">
               + <span className="hidden md:inline">꿈 기록</span>
             </Link>
+            <Link
+              href="/pricing"
+              className="text-xs px-3 py-1.5 rounded-full border border-purple-500/40 text-purple-400 hover:bg-purple-500/10 transition"
+            >
+              ✦ 플랜 업그레이드
+            </Link>
             <button onClick={handleSignOut} className="text-xs text-gray-600 hover:text-gray-400 transition hidden md:block">
               로그아웃
             </button>
