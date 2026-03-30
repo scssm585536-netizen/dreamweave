@@ -194,17 +194,17 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <button
-                  onClick={() => handleUpgrade(plan.id)}
-                  disabled={isCurrent || isUpgrading !== null}
-                  className={`w-full py-3 rounded-full text-sm font-semibold transition-all duration-200 ${
-                    isCurrent
-                      ? 'bg-white/[0.05] text-gray-500 cursor-default'
-                      : 'bg-purple-600 hover:bg-purple-500 shadow-lg shadow-purple-900/40'
-                  }`}
-                >
-                  {isCurrent ? '현재 사용 중' : isUpgrading ? '변경 중...' : '이 플랜 선택'}
-                </button>
+<button
+  onClick={() => handleUpgrade(plan.id)}
+  disabled={isCurrent || upgrading !== null}
+  className={`w-full py-3 rounded-full text-sm font-semibold transition-all duration-200 ${
+    isCurrent
+      ? 'bg-white/[0.05] text-gray-500 cursor-default'
+      : 'bg-purple-600 hover:bg-purple-500 shadow-lg shadow-purple-900/40'
+  }`}
+>
+  {isCurrent ? '현재 사용 중' : upgrading === plan.id ? '변경 중...' : '이 플랜 선택'}
+</button>
               </div>
             )
           })}
