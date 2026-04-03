@@ -21,7 +21,6 @@
     "postcss": "^8",
     "react": "^18",
     "react-dom": "^18",
-    "react-native-svg": "^15.15.4",
     "stripe": "^21.0.1",
     "swr": "^2",
     "tailwindcss": "^3",
