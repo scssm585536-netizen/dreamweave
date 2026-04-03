@@ -1,14 +1,14 @@
 export const translations = {
   ko: {
     // 공통
-    appName: 'DreamWeave',
-    tagline: 'AI 꿈 직조기',
+    appName: 'Dreamsync',
+    tagline: 'AI 꿈 동기화',
 
     // 랜딩
     landing: {
-      badge: 'AI 꿈 직조기 · 2026',
+      badge: 'AI 꿈 동기화 · 2026',
       title1: 'Dream',
-      title2: 'Weave',
+      title2: 'sync',
       sub1: '아침에 꿈만 쓰면,',
       sub2: '"AI가 내 꿈을 전 세계 사람들의 꿈과\n실시간으로 엮어 하나의 거대한 꿈 직물로 만들어줍니다"',
       cta1: '지금 시작하기 →',
@@ -98,7 +98,7 @@ export const translations = {
 
     // 인증
     auth: {
-      title: 'DreamWeave',
+      title: 'Dreamsync',
       desc: '꿈을 기록하고 세상과 연결하세요',
       login: '로그인',
       signup: '회원가입',
@@ -111,13 +111,13 @@ export const translations = {
   },
 
   en: {
-    appName: 'DreamWeave',
-    tagline: 'AI Dream Weaver',
+    appName: 'Dreamsync',
+    tagline: 'AI Dream Sync',
 
     landing: {
-      badge: 'AI Dream Weaver · 2026',
+      badge: 'AI Dream Sync · 2026',
       title1: 'Dream',
-      title2: 'Weave',
+      title2: 'sync',
       sub1: 'Just write your dream in the morning,',
       sub2: '"AI weaves your dream with people around the world\ninto one giant dream tapestry in real time"',
       cta1: 'Get Started →',
@@ -201,7 +201,7 @@ export const translations = {
     },
 
     auth: {
-      title: 'DreamWeave',
+      title: 'Dreamsync',
       desc: 'Record dreams and connect with the world',
       login: 'Login',
       signup: 'Sign Up',

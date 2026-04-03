@@ -130,7 +130,7 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xl md:text-2xl">🧵</span>
-              <span className="text-purple-400 text-xs tracking-[0.3em] uppercase font-medium">DreamWeave</span>
+              <span className="text-purple-400 text-xs tracking-[0.3em] uppercase font-medium">Dreamsync</span>
             </div>
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight">꿈 아카이브</h1>
           </div>

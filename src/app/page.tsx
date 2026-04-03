@@ -1,10 +1,9 @@
 'use client'
 import Link from 'next/link'
 import { useLocale } from '@/hooks/useLocale'
-import LocaleToggle from '@/components/ui/LocaleToggle'
 
 export default function LandingPage() {
-  const { t } = useLocale()
+  const { locale, toggleLocale, t } = useLocale()
   const l = t.landing
 
   return (
@@ -19,10 +18,15 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 py-4">
         <div className="flex items-center gap-2">
           <span className="text-xl">🧵</span>
-          <span className="font-bold text-sm">DreamWeave</span>
+          <span className="font-bold text-sm">Dreamsync</span>
         </div>
         <div className="flex items-center gap-2">
-          <LocaleToggle />
+          <button
+            onClick={toggleLocale}
+            className="text-xs px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20 text-gray-500 hover:text-gray-300 transition"
+          >
+            {locale === 'ko' ? 'EN' : '한'}
+          </button>
           <Link href="/auth?mode=login" className="px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm text-gray-300 hover:text-white border border-white/10 hover:border-white/20 transition">
             {t.nav.login}
           </Link>

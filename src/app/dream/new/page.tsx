@@ -47,6 +47,10 @@ export default function NewDreamPage() {
         <Link href="/dashboard" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-300 text-sm mb-8 md:mb-12 transition">
           ← 대시보드
         </Link>
+        <div className="flex items-center gap-2 mb-6">
+          <span className="text-xl">🧵</span>
+          <span className="font-bold text-sm">Dreamsync</span>
+        </div>
         <div className="mb-8 md:mb-10">
           <span className="text-purple-400 text-xs tracking-[0.3em] uppercase">오늘의 꿈</span>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight mt-2">꿈을 기록해요</h1>
