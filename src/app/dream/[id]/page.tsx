@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Dream } from '@/types'
 import { formatDreamDate } from '@/lib/dream'
+import LikeButton from '@/components/dream/LikeButton'
+import CommentSection from '@/components/dream/CommentSection'
 
 export default function DreamDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -135,6 +137,7 @@ export default function DreamDetailPage({ params }: { params: { id: string } }) 
                 </button>
               </>
             )}
+            <LikeButton dreamId={dream.id} userId={userId} />
             {isOwner && (
               <button
                 onClick={handleDelete}
@@ -238,6 +241,8 @@ export default function DreamDetailPage({ params }: { params: { id: string } }) 
             </div>
           )}
         </div>
+
+        <CommentSection dreamId={dream.id} userId={userId} />
       </div>
     </main>
   )
