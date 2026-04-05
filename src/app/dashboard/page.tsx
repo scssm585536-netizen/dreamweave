@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import DreamCard from '@/components/dream/DreamCard'
+import EmotionStats from '@/components/dashboard/EmotionStats'
 import { Dream } from '@/types'
 
 type Tab = 'all' | 'mine'
@@ -20,8 +21,9 @@ export default function DashboardPage() {
   const [searching, setSearching] = useState(false)
   const [tab, setTab] = useState<Tab>('all')
   const [totalStats, setTotalStats] = useState({ dreams: 0, connections: 0, emotions: 0 })
-  const [userPlan, setUserPlan] = useState<string>('free')
-  const [dreamUsed, setDreamUsed] = useState<number>(0)
+const [userPlan, setUserPlan] = useState<string>('free')
+const [dreamUsed, setDreamUsed] = useState<number>(0)
+const [plan, setPlan] = useState('free')
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -53,12 +55,14 @@ export default function DashboardPage() {
       setAllDreams(allList)
       setMyDreams(mineList)
       setFiltered(allList)
-      // 플랜 정보
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('plan, dream_count_this_month')
-        .eq('id', user.id)
-        .single()
+// 플랜 정보
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('plan, dream_count_this_month')
+  .eq('id', user.id)
+  .single()
+
+setPlan(profile?.plan ?? 'free')
 
       setUserPlan(profile?.plan ?? 'free')
       setDreamUsed(profile?.dream_count_this_month ?? 0)
@@ -155,6 +159,7 @@ export default function DashboardPage() {
 
         {/* 전체 통계 */}
         <div className="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-4 mb-8 md:mb-10">
+{userId && <EmotionStats userId={userId} plan={plan} />}
           {[
             { label: '전체 공개 꿈', value: totalStats.dreams, icon: '🌙' },
             { label: '직물 연결', value: totalStats.connections, icon: '🔗' },
