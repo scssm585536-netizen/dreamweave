@@ -143,6 +143,14 @@ setPlan(profile?.plan ?? 'free')
             <Link href="/weave" className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 rounded-full border border-white/10 hover:border-purple-500/50 hover:bg-purple-500/10 text-xs md:text-sm text-gray-300 hover:text-white transition-all duration-200">
               🌐 <span className="hidden md:inline">직물 탐험</span>
             </Link>
+            {(plan === 'dreamer' || plan === 'weaver') && (
+              <Link
+                href="/stats"
+                className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 rounded-full border border-white/10 hover:border-purple-500/50 hover:bg-purple-500/10 text-xs md:text-sm text-gray-300 hover:text-white transition-all duration-200"
+              >
+                📊 <span className="hidden md:inline">통계</span>
+              </Link>
+            )}
             <Link href="/dream/new" className="flex items-center gap-1 md:gap-2 px-3 md:px-5 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-xs md:text-sm font-semibold shadow-lg shadow-purple-900/50 transition-all duration-200">
               + <span className="hidden md:inline">꿈 기록</span>
             </Link>

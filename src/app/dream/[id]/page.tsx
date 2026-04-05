@@ -7,6 +7,7 @@ import { Dream } from '@/types'
 import { formatDreamDate } from '@/lib/dream'
 import LikeButton from '@/components/dream/LikeButton'
 import CommentSection from '@/components/dream/CommentSection'
+import { exportDreamPdf } from '@/lib/exportPdf'
 
 export default function DreamDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -16,10 +17,20 @@ export default function DreamDetailPage({ params }: { params: { id: string } }) 
   const [userId, setUserId] = useState<string | null>(null)
   const [isOwner, setIsOwner] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [plan, setPlan] = useState('free')
+  const [pdfLoading, setPdfLoading] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id)
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (user) {
+        setUserId(user.id)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('id', user.id)
+          .single()
+        setPlan(profile?.plan ?? 'free')
+      }
     })
 
     fetch(`/api/dream/${params.id}`)
@@ -69,6 +80,26 @@ export default function DreamDetailPage({ params }: { params: { id: string } }) 
     const { dream: updated } = await res.json()
     setDream(updated)
     setUpdating(false)
+  }
+
+  async function handleExportPdf() {
+    if (!dream) return
+    if (plan === 'free') {
+      alert('Dreamer 플랜 이상에서 이용할 수 있어요')
+      return
+    }
+    setPdfLoading(true)
+    await exportDreamPdf({
+      content: dream.content,
+      interpretation: dream.interpretation,
+      emotions: dream.emotions as string[],
+      keywords: dream.keywords as string[],
+      emotion_scores: dream.emotion_scores,
+      main_tag: dream.main_tag,
+      created_at: dream.created_at,
+      visibility: dream.visibility,
+    })
+    setPdfLoading(false)
   }
 
   async function handleCopyLink() {
@@ -166,6 +197,19 @@ export default function DreamDetailPage({ params }: { params: { id: string } }) 
               </>
             )}
             <LikeButton dreamId={dream.id} userId={userId} />
+            {isOwner && (
+              <button
+                onClick={handleExportPdf}
+                disabled={pdfLoading}
+                className={`text-xs border px-3 py-1.5 rounded-full transition ${
+                  plan === 'free'
+                    ? 'border-white/5 text-gray-700 cursor-not-allowed'
+                    : 'text-gray-500 hover:text-purple-400 border-white/[0.06] hover:border-purple-400/40'
+                }`}
+              >
+                {pdfLoading ? '...' : plan === 'free' ? '🔒 PDF' : '📄 PDF'}
+              </button>
+            )}
             {isOwner && (
               <button
                 onClick={handleDelete}

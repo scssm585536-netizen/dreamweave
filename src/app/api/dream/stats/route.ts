@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const userId = searchParams.get('userId')
+  const period = searchParams.get('period') ?? '1m' // 1m, 3m, 1y, all
 
   if (!userId) return NextResponse.json({ error: '유저 없음' }, { status: 400 })
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-
   // 플랜 확인
-  const { data: profile } = await supabase
+  const { data: profile } = await supabaseAdmin
     .from('profiles')
     .select('plan')
     .eq('id', userId)
@@ -23,65 +19,63 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'PLAN_REQUIRED' }, { status: 403 })
   }
 
-  // 이번 달 꿈 가져오기
-  const startOfMonth = new Date()
-  startOfMonth.setDate(1)
-  startOfMonth.setHours(0, 0, 0, 0)
-
-  const { data: dreams } = await supabase
-    .from('dreams')
-    .select('emotions, emotion_scores, created_at')
-    .eq('user_id', userId)
-    .gte('created_at', startOfMonth.toISOString())
-
-  // 지난달 꿈
-  const startOfLastMonth = new Date()
-  startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1)
-  startOfLastMonth.setDate(1)
-  startOfLastMonth.setHours(0, 0, 0, 0)
-  const endOfLastMonth = new Date()
-  endOfLastMonth.setDate(0)
-
-  const { data: lastMonthDreams } = await supabase
-    .from('dreams')
-    .select('emotions, emotion_scores')
-    .eq('user_id', userId)
-    .gte('created_at', startOfLastMonth.toISOString())
-    .lte('created_at', endOfLastMonth.toISOString())
-
-  // 감정 집계
-  function aggregateEmotions(dreamList: any[]) {
-    const counts: Record<string, number> = {}
-    const scores: Record<string, number[]> = {}
-
-    dreamList?.forEach((d) => {
-      const emotions = d.emotions ?? []
-      const emotionScores = d.emotion_scores ?? {}
-      emotions.forEach((e: string) => {
-        counts[e] = (counts[e] ?? 0) + 1
-        if (!scores[e]) scores[e] = []
-        if (emotionScores[e]) scores[e].push(emotionScores[e])
-      })
-    })
-
-    return Object.entries(counts)
-      .map(([name, count]) => ({
-        name,
-        count,
-        avgScore: scores[name]?.length
-          ? Math.round(scores[name].reduce((a, b) => a + b, 0) / scores[name].length)
-          : 0,
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5)
+  // 기간 계산
+  const now = new Date()
+  let startDate: Date | null = null
+  if (period === '1m') {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+  } else if (period === '3m') {
+    startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1)
+  } else if (period === '1y') {
+    startDate = new Date(now.getFullYear(), 0, 1)
   }
 
-  const thisMonth = aggregateEmotions(dreams ?? [])
-  const lastMonth = aggregateEmotions(lastMonthDreams ?? [])
+  let query = supabaseAdmin
+    .from('dreams')
+    .select('emotions, emotion_scores, keywords, main_tag, created_at')
+    .eq('user_id', userId)
+
+  if (startDate) {
+    query = query.gte('created_at', startDate.toISOString())
+  }
+
+  const { data: dreams } = await query.order('created_at', { ascending: true })
+
+  const dreamList = dreams ?? []
+
+  // 감정 집계
+  const emotionCounts: Record<string, number> = {}
+  const tagCounts: Record<string, number> = {}
+  const monthCounts: Record<string, number> = {}
+
+  dreamList.forEach((d) => {
+    // 감정
+    ;(d.emotions ?? []).forEach((e: string) => {
+      emotionCounts[e] = (emotionCounts[e] ?? 0) + 1
+    })
+    // 태그
+    if (d.main_tag) tagCounts[d.main_tag] = (tagCounts[d.main_tag] ?? 0) + 1
+    // 월별
+    const month = new Date(d.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short' })
+    monthCounts[month] = (monthCounts[month] ?? 0) + 1
+  })
+
+  const topEmotions = Object.entries(emotionCounts)
+    .sort((a, b) => b[1] - a[1]).slice(0, 10)
+
+  const topTags = Object.entries(tagCounts)
+    .sort((a, b) => b[1] - a[1]).slice(0, 10)
+
+  const monthlyData = Object.entries(monthCounts)
+    .map(([month, count]) => ({ month, count }))
 
   return NextResponse.json({
-    thisMonth,
-    lastMonth,
-    totalDreams: dreams?.length ?? 0,
+    totalDreams: dreamList.length,
+    topEmotions,
+    topTags,
+    monthlyData,
+    thisMonth: {
+      count: monthCounts[now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short' })] ?? 0,
+    },
   })
 }
