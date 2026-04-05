@@ -79,8 +79,30 @@ export default function DreamDetailPage({ params }: { params: { id: string } }) 
 
   function handleTwitterShare() {
     const text = `${dream?.main_tag ? `#${dream.main_tag} ` : ''}내 꿈을 AI가 해석해줬어요 🧵`
-    const url = window.location.href
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`,
+      '_blank'
+    )
+  }
+
+  async function handleInstagramShare() {
+    const shareData = {
+      title: 'Dreamsync — AI 꿈 동기화',
+      text: `${dream?.main_tag ? `✦ ${dream.main_tag}\n` : ''}${dream?.content?.slice(0, 100)}...\n\n내 꿈을 AI가 해석해줬어요 🧵`,
+      url: window.location.href,
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch {
+        // 취소한 경우 무시
+      }
+      return
+    }
+
+    await navigator.clipboard.writeText(window.location.href)
+    alert('링크가 복사됐어요!\n인스타그램 앱에서 스토리나 바이오에 붙여넣기 해줘요 📸')
   }
 
   if (loading) {
@@ -125,15 +147,21 @@ export default function DreamDetailPage({ params }: { params: { id: string } }) 
               <>
                 <button
                   onClick={handleTwitterShare}
-                  className="text-xs text-gray-500 hover:text-blue-400 border border-white/[0.06] hover:border-blue-400/40 px-3 py-1.5 rounded-full transition"
+                  className="text-xs text-gray-500 hover:text-blue-400 border border-white/[0.06] hover:border-blue-400/40 px-3 py-1.5 rounded-full transition flex items-center gap-1"
                 >
                   𝕏 공유
+                </button>
+                <button
+                  onClick={handleInstagramShare}
+                  className="text-xs text-gray-500 hover:text-pink-400 border border-white/[0.06] hover:border-pink-400/40 px-3 py-1.5 rounded-full transition flex items-center gap-1"
+                >
+                  📸 인스타
                 </button>
                 <button
                   onClick={handleCopyLink}
                   className="text-xs text-gray-500 hover:text-purple-400 border border-white/[0.06] hover:border-purple-400/40 px-3 py-1.5 rounded-full transition"
                 >
-                  {copied ? '✓ 복사됨' : '🔗 링크 복사'}
+                  {copied ? '✓ 복사됨' : '🔗 링크'}
                 </button>
               </>
             )}
