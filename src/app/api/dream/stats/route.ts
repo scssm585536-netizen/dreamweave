@@ -69,13 +69,53 @@ export async function GET(req: NextRequest) {
   const monthlyData = Object.entries(monthCounts)
     .map(([month, count]) => ({ month, count }))
 
+  // 이번 달 / 지난달 감정 집계 (EmotionStats 컴포넌트용)
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+
+  const { data: allDreams } = await supabaseAdmin
+    .from('dreams')
+    .select('emotions, emotion_scores, created_at')
+    .eq('user_id', userId)
+
+  function aggregateEmotions(list: any[]) {
+    const counts: Record<string, number> = {}
+    const scores: Record<string, number[]> = {}
+    list.forEach((d) => {
+      const emotionScores = d.emotion_scores ?? {}
+      ;(d.emotions ?? []).forEach((e: string) => {
+        counts[e] = (counts[e] ?? 0) + 1
+        if (!scores[e]) scores[e] = []
+        if (emotionScores[e]) scores[e].push(emotionScores[e])
+      })
+    })
+    return Object.entries(counts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        avgScore: scores[name]?.length
+          ? Math.round(scores[name].reduce((a, b) => a + b, 0) / scores[name].length)
+          : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+  }
+
+  const thisMonthList = (allDreams ?? []).filter(d =>
+    new Date(d.created_at) >= startOfThisMonth
+  )
+  const lastMonthList = (allDreams ?? []).filter(d => {
+    const date = new Date(d.created_at)
+    return date >= startOfLastMonth && date <= endOfLastMonth
+  })
+
   return NextResponse.json({
     totalDreams: dreamList.length,
     topEmotions,
     topTags,
     monthlyData,
-    thisMonth: {
-      count: monthCounts[now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short' })] ?? 0,
-    },
+    thisMonth: aggregateEmotions(thisMonthList),
+    lastMonth: aggregateEmotions(lastMonthList),
   })
 }

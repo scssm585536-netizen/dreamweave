@@ -27,19 +27,24 @@ export default function EmotionStats({ userId, plan }: Props) {
 
   useEffect(() => {
     if (plan === 'free') { setLoading(false); return }
-    fetch(`/api/dream/stats?userId=${userId}`)
+    fetch(`/api/dream/stats?userId=${userId}&period=1m`)
       .then(r => r.json())
       .then(data => {
         if (!data.error) {
-          setStats(data.thisMonth ?? [])
-          setLastMonth(data.lastMonth ?? [])
+          const thisMonth = Array.isArray(data.thisMonth) ? data.thisMonth : []
+          const lastMonthData = Array.isArray(data.lastMonth) ? data.lastMonth : []
+          setStats(thisMonth)
+          setLastMonth(lastMonthData)
           setTotalDreams(data.totalDreams ?? 0)
         }
         setLoading(false)
       })
+      .catch(() => setLoading(false))
   }, [userId, plan])
 
-  const maxCount = Math.max(...stats.map(s => s.count), 1)
+  const maxCount = Array.isArray(stats) && stats.length > 0
+    ? Math.max(...stats.map(s => s.count))
+    : 1
 
   if (plan === 'free') {
     return (

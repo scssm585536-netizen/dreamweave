@@ -21,31 +21,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'PLAN_REQUIRED' }, { status: 403 })
   }
 
-  // 키워드/감정/내용으로 검색
-  const { data: dreams, error } = await supabaseAdmin
+  // 전체 조회 후 클라이언트 필터링 (JSONB 배열 검색)
+  const { data: dreams } = await supabaseAdmin
     .from('dreams')
     .select('id, content, emotions, keywords, emotion_scores, keyword_scores, main_tag, visibility, created_at')
     .eq('user_id', userId)
-    .or(`content.ilike.%${query}%, main_tag.ilike.%${query}%`)
     .order('created_at', { ascending: false })
-    .limit(20)
 
-  if (error) return NextResponse.json({ error: '검색 실패' }, { status: 500 })
+  if (!dreams) return NextResponse.json({ dreams: [] })
 
-  // keywords 배열에서도 검색 (JSONB)
-  const { data: keywordDreams } = await supabaseAdmin
-    .from('dreams')
-    .select('id, content, emotions, keywords, emotion_scores, keyword_scores, main_tag, visibility, created_at')
-    .eq('user_id', userId)
-    .contains('keywords', [query])
-    .order('created_at', { ascending: false })
-    .limit(20)
-
-  // 중복 제거 후 합치기
-  const allDreams = [...(dreams ?? [])]
-  keywordDreams?.forEach((kd) => {
-    if (!allDreams.find(d => d.id === kd.id)) allDreams.push(kd)
+  const q = query.toLowerCase()
+  const filtered = dreams.filter((d) => {
+    const inContent = d.content?.toLowerCase().includes(q)
+    const inMainTag = d.main_tag?.toLowerCase().includes(q)
+    const inEmotions = (d.emotions ?? []).some((e: string) =>
+      e.toLowerCase().includes(q)
+    )
+    const inKeywords = (d.keywords ?? []).some((k: any) => {
+      const name = typeof k === 'string' ? k : k?.name ?? ''
+      return name.toLowerCase().includes(q)
+    })
+    return inContent || inMainTag || inEmotions || inKeywords
   })
 
-  return NextResponse.json({ dreams: allDreams })
+  return NextResponse.json({ dreams: filtered })
 }
