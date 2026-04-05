@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { signOut } from '@/lib/auth'
 import DreamCard from '@/components/dream/DreamCard'
 import EmotionStats from '@/components/dashboard/EmotionStats'
+import SymbolSearch from '@/components/dashboard/SymbolSearch'
 import { Dream } from '@/types'
 
 type Tab = 'all' | 'mine'
@@ -159,7 +160,6 @@ setPlan(profile?.plan ?? 'free')
 
         {/* 전체 통계 */}
         <div className="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-4 mb-8 md:mb-10">
-{userId && <EmotionStats userId={userId} plan={plan} />}
           {[
             { label: '전체 공개 꿈', value: totalStats.dreams, icon: '🌙' },
             { label: '직물 연결', value: totalStats.connections, icon: '🔗' },
@@ -172,6 +172,9 @@ setPlan(profile?.plan ?? 'free')
             </div>
           ))}
         </div>
+
+        {userId && <EmotionStats userId={userId} plan={plan} />}
+        {userId && <SymbolSearch userId={userId} plan={plan} />}
 
         {/* 탭 */}
         <div className="flex bg-white/[0.03] rounded-full p-1 mb-6 border border-white/[0.06] w-fit">
