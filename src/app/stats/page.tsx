@@ -77,8 +77,12 @@ export default function StatsPage() {
     </main>
   )
 
-  const maxEmotionCount = Math.max(...(stats?.topEmotions.map(([, c]) => c) ?? [1]))
-  const maxMonthCount = Math.max(...(stats?.monthlyData.map(d => d.count) ?? [1]))
+  const emotionList = Array.isArray(stats?.topEmotions) ? stats.topEmotions : []
+  const monthList = Array.isArray(stats?.monthlyData) ? stats.monthlyData : []
+  const tagList = Array.isArray(stats?.topTags) ? stats.topTags : []
+
+  const maxEmotionCount = emotionList.length > 0 ? Math.max(...emotionList.map(([, c]) => c)) : 1
+  const maxMonthCount = monthList.length > 0 ? Math.max(...monthList.map(d => d.count)) : 1
 
   return (
     <main className="min-h-screen bg-[#070712] text-white">
@@ -141,30 +145,28 @@ export default function StatsPage() {
                 <p className="text-xs text-gray-600 mt-1">총 꿈 기록</p>
               </div>
               <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 text-center">
-                <p className="text-3xl font-black text-purple-300">{stats.topEmotions[0]?.[0] ?? '-'}</p>
+                <p className="text-3xl font-black text-purple-300">{emotionList[0]?.[0] ?? '-'}</p>
                 <p className="text-xs text-gray-600 mt-1">가장 많은 감정</p>
               </div>
               <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 text-center col-span-2 md:col-span-1">
-                <p className="text-3xl font-black text-purple-300">{stats.topTags[0]?.[0] ?? '-'}</p>
+                <p className="text-3xl font-black text-purple-300">{tagList[0]?.[0] ?? '-'}</p>
                 <p className="text-xs text-gray-600 mt-1">주요 테마</p>
               </div>
             </div>
 
             {/* 월별 꿈 수 */}
-            {stats.monthlyData.length > 1 && (
+            {monthList.length > 1 && (
               <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
                 <h2 className="text-xs text-gray-600 uppercase tracking-widest mb-6">월별 꿈 기록</h2>
                 <div className="flex items-end gap-2 h-32">
-                  {stats.monthlyData.map(({ month, count }) => (
+                  {monthList.map(({ month, count }) => (
                     <div key={month} className="flex-1 flex flex-col items-center gap-1">
                       <span className="text-xs text-gray-500">{count}</span>
                       <div
                         className="w-full rounded-t-md bg-purple-600/60 transition-all duration-500"
                         style={{ height: `${(count / maxMonthCount) * 100}%`, minHeight: 4 }}
                       />
-                      <span className="text-xs text-gray-700 truncate w-full text-center">
-                        {month.replace('년 ', '\n')}
-                      </span>
+                      <span className="text-xs text-gray-700 truncate w-full text-center">{month}</span>
                     </div>
                   ))}
                 </div>
@@ -175,7 +177,7 @@ export default function StatsPage() {
             <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
               <h2 className="text-xs text-gray-600 uppercase tracking-widest mb-6">감정 분포 Top 10</h2>
               <div className="space-y-3">
-                {stats.topEmotions.map(([emotion, count], i) => {
+                {emotionList.map(([emotion, count], i) => {
                   const color = EMOTION_COLORS[emotion] ?? EMOTION_COLORS.default
                   return (
                     <div key={emotion} className="flex items-center gap-3">
@@ -202,7 +204,7 @@ export default function StatsPage() {
             <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
               <h2 className="text-xs text-gray-600 uppercase tracking-widest mb-4">주요 테마 Top 10</h2>
               <div className="flex flex-wrap gap-2">
-                {stats.topTags.map(([tag, count], i) => (
+                {tagList.map(([tag, count], i) => (
                   <div key={tag} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm ${
                     i === 0
                       ? 'bg-purple-600/20 border-purple-500/40 text-purple-200'
