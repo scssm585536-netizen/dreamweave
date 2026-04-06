@@ -7,6 +7,7 @@ import { signOut } from '@/lib/auth'
 import DreamCard from '@/components/dream/DreamCard'
 import EmotionStats from '@/components/dashboard/EmotionStats'
 import SymbolSearch from '@/components/dashboard/SymbolSearch'
+import { exportMonthlyPdf } from '@/lib/exportPdf'
 import { Dream } from '@/types'
 
 type Tab = 'all' | 'mine'
@@ -25,6 +26,7 @@ export default function DashboardPage() {
 const [userPlan, setUserPlan] = useState<string>('free')
 const [dreamUsed, setDreamUsed] = useState<number>(0)
 const [plan, setPlan] = useState('free')
+  const [bookLoading, setBookLoading] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -106,6 +108,27 @@ setPlan(profile?.plan ?? 'free')
     setFiltered(tab === 'all' ? allDreams : myDreams)
   }
 
+  async function handleExportBook() {
+    if (plan !== 'weaver') {
+      alert('Weaver 플랜 전용 기능이에요')
+      return
+    }
+    setBookLoading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const res = await fetch(`/api/dream/export?userId=${user.id}`)
+      const { dreams, error } = await res.json()
+      if (error) { alert('꿈 불러오기 실패'); return }
+      if (!dreams || dreams.length === 0) { alert('이번 달 기록된 꿈이 없어요'); return }
+      await exportMonthlyPdf(dreams)
+    } catch {
+      alert('PDF 생성 실패')
+    } finally {
+      setBookLoading(false)
+    }
+  }
+
   async function handleSignOut() {
     await signOut()
     router.push('/auth')
@@ -150,6 +173,15 @@ setPlan(profile?.plan ?? 'free')
               >
                 📊 <span className="hidden md:inline">통계</span>
               </Link>
+            )}
+            {plan === 'weaver' && (
+              <button
+                onClick={handleExportBook}
+                disabled={bookLoading}
+                className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 rounded-full border border-indigo-500/30 hover:border-indigo-500/50 hover:bg-indigo-500/10 text-xs md:text-sm text-indigo-300 hover:text-indigo-200 transition-all duration-200 disabled:opacity-40"
+              >
+                📚 <span className="hidden md:inline">{bookLoading ? '생성 중...' : 'Dream Book'}</span>
+              </button>
             )}
             <Link href="/dream/new" className="flex items-center gap-1 md:gap-2 px-3 md:px-5 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-xs md:text-sm font-semibold shadow-lg shadow-purple-900/50 transition-all duration-200">
               + <span className="hidden md:inline">꿈 기록</span>
